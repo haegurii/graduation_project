@@ -13,12 +13,16 @@ export default function SignUp() {
   const [password, setPassword] = useState<string>("");
   const [passwordCheck, setPasswordCheck] = useState<string>("");
   const [username, setUsername] = useState<string>("");
+  const [role, setRole] = useState<string>("");
+  const [birthDate, setBirthDate] = useState<string>("");
   const sighUpHandler = () => {
     const data = {
       username,
       password,
       passwordCheck,
       email,
+      role,
+      birthDate,
     };
     axios
       .post("http://localhost:8080/api/auth/signUp", data)
@@ -57,6 +61,18 @@ export default function SignUp() {
               label="닉네임"
               variant="standard"
               onChange={(e) => setUsername(e.target.value)}
+            />
+            <TextField
+              fullWidth
+              label="농인"
+              variant="standard"
+              onChange={(e) => setRole(e.target.value)}
+            />
+            <TextField
+              fullWidth
+              label="생년월일"
+              variant="standard"
+              onChange={(e) => setBirthDate(e.target.value)}
             />
           </Box>
         </CardContent>

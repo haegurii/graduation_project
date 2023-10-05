@@ -25,8 +25,8 @@ public class AuthService {
 
         //Email 중복 확인
         if (//이메일 찾기 쿼리문 작성
-            // userRepository.existsById(userEmail
-                false) {
+             userRepository.findByEmail(userEmail)!=null
+                ) {
             try {
                 return ResponseDto.setFailed("Existed Email!", null);
             } catch (Exception e) {

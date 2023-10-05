@@ -1,0 +1,59 @@
+/* Header.css */
+
+/* 네비게이션 바 전체를 가운데 정렬 */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  background-color: #333;
+  font-size: 18px;
+}
+
+/* 로고(브랜드) 스타일 설정 */
+.navbar-brand {
+  color: #fff;
+  font-weight: bold;
+  margin-right: auto; /* 플랫폼 닉네임과 아이콘을 왼쪽으로 몰아줍니다. */
+}
+
+/* 네비게이션 메뉴 항목 스타일 설정 */
+.nav-link {
+  color: #fff;
+  font-weight: bold;
+  padding: 5px 15px;
+}
+
+/* 검색 바 스타일 설정 */
+.input-group {
+  max-width: 300px;
+}
+
+/* 검색 버튼 스타일 설정 */
+#button-addon2 {
+  background-color: #007bff;
+  border-color: #007bff;
+  font-weight: bold;
+}
+
+/* 회원가입 및 로그인 버튼 스타일 설정 */
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+  font-weight: bold;
+}
+
+.btn-outline-primary {
+  color: #007bff;
+  border-color: #007bff;
+  font-weight: bold;
+  margin-left: 10px; /* 로그인과 회원가입 버튼을 오른쪽으로 배치합니다. */
+}
+
+/* 중앙 정렬을 위한 추가 스타일 */
+.navbar-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: auto; /* 메뉴 항목들을 가운데로 몰아줍니다. */
+}

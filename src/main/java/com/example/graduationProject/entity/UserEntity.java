@@ -30,12 +30,14 @@ public class UserEntity {
     private Timestamp createDate;
     private String provider;
     private String providerId;
+    private String birthDate;
 
     public UserEntity(SignUpDto dto) {
         this.username = dto.getUsername();
         this.password = dto.getPassword();
         this.email = dto.getEmail();
-//        this.role = role;
+        this.role = dto.getRole();
+        this.birthDate = dto.getBirthDate();
 //        this.createDate = createDate;
 //        this.provider = provider;
 //        this.providerId = providerId;
