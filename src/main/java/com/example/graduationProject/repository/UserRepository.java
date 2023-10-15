@@ -8,4 +8,7 @@ import org.springframework.stereotype.Repository;
 public interface UserRepository extends JpaRepository<UserEntity,Integer> {
 
     public UserEntity findByEmail(String Email);
+
+    public boolean existsByEmailAndPassword(String userEmail, String userPassword);
+
 }

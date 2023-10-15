@@ -62,7 +62,9 @@ function Header() {
         </Link>
 
         {/* 로그인 버튼 */}
-        <Button variant="outline-primary">로그인</Button>
+        <Link to="/signin" className="ml-2">
+          <Button variant="outline-primary">로그인</Button>
+        </Link>
       </Container>
     </Navbar>
   );

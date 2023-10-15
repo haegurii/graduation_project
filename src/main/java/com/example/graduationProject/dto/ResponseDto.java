@@ -19,4 +19,8 @@ public class ResponseDto <D>{
 //        return new ResponseDto(true, message, data);
         return ResponseDto.set(false, message, null);
     }
+    public static <D> ResponseDto<D> setFailed(String message){
+//        return new ResponseDto(true, message, data);
+        return ResponseDto.set(false, message, null);
+    }
 }
