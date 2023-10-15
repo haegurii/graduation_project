@@ -2,7 +2,7 @@ HELP.md
 .gradle
 build/
 src/reactfront/
-src/static/static/
+src/resources/static/static/
 !gradle/wrapper/gradle-wrapper.jar
 #!**/src/main/**/build/
 #!**/src/test/**/build/
