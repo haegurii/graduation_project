@@ -21,18 +21,9 @@ mongoose
     console.log(err);
   });
 
-app.get("/", (req, res) => {
-  throw new Error("It is an error");
-});
-
-app.post("/", (req, res) => {
-  console.log(req.body);
-  res.json(req.body);
-});
-
 //링크 라우팅 user로 오는건 라우터폴더의 유져로 보냄
 app.use("/users", require("./routes/users"));
-
+app.use("/signlanguages", require("./routes/signLanguages"));
 app.use((error, req, res, next) => {
   res.status(error.status || 500);
   res.send(error.message || "서버에서 에러가 발생하였습니다.");
