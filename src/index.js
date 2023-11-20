@@ -5,6 +5,7 @@ const path = require("path");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
+const twilio = require("twilio");
 dotenv.config();
 
 const port = 4000;
@@ -14,7 +15,6 @@ const server = http.createServer(app);
 // 현재 룸에 들어간 사용자 확인하는 용도
 let connectedUsers = [];
 let rooms = [];
-
 
 //ors정책회피
 app.use(cors());
@@ -91,39 +91,31 @@ io.on("connection", (socket) => {
 
   // 클라이언트가 새로운 방을 만들었을 때 발생
   socket.on("create-new-room", (data) => {
-    console.log('socket.on(create-new-room)');
+    console.log(`socket.on("create-new-room")`);
     createNewRoomHandler(data, socket);
   });
 
   // 클라이언트가 방에 참가 했을 때 발생
   socket.on("join-room", (data) => {
-    console.log('socket.on(join-room)');
-
+    console.log(`socket.on("join-room")`);
     joinRoomHandler(data, socket);
   });
 
   // 클라이언트가 연결을 종료했을 때 발생
   socket.on("disconnect", () => {
-    console.log('socket.on(disconnect)');
-    
     disconnectHandler(socket);
   });
 
   socket.on("conn-signal", (data) => {
-    console.log('socket.on(conn-signal)');
-    
     signalingHandler(data, socket);
   });
 
   socket.on("conn-init", (data) => {
-    console.log('socket.on(conn-init)');
-
+    console.log(`socket.on("conn-init"): ${data.connUserSocketId}`);
     initializeConnectionHandler(data, socket);
   });
 
   socket.on("direct-message", (data) => {
-    console.log('socket.on(direct-message)');
-
     directMessageHandler(data, socket);
   });
 });
@@ -146,37 +138,31 @@ const createNewRoomHandler = (data, socket) => {
     onlyAudio,
   };
   console.log(`createNewRoomHandler: newUser: ${newUser}`);
-
   // push that user to connectedUsers
   connectedUsers = [...connectedUsers, newUser];
-  console.log(`createNewRoomHandler: connectedUsers: ${connectedUsers}`);
-
   //create new room
   const newRoom = {
     id: roomId,
     connectedUsers: [newUser],
   };
   console.log(`createNewRoomHandler: newRoom: ${newRoom}`);
-
   // join socket.io room
   socket.join(roomId);
-  console.log(`createNewRoomHandler: socket.join(${roomId})`);
-
 
   rooms = [...rooms, newRoom];
-  console.log(`createNewRoomHandler: rooms: ${rooms}`);
 
   // emit to that client which created that room roomId
   socket.emit("room-id", { roomId });
-  console.log(`createNewRoomHandler: socket.emit("room-id", ${ roomId })`);
 
   // emit an event to all users connected
   // to that room about new users which are right in this room
   socket.emit("room-update", { connectedUsers: newRoom.connectedUsers });
-  console.log(`createNewRoomHandler: socket.emit("room-update", { connectedUsers: ${newRoom.connectedUsers }})`);
+  
 };
 
 const joinRoomHandler = (data, socket) => {
+  console.log(`${data} is joining a room`);
+  console.log(data);
   const { identity, roomId, onlyAudio } = data;
 
   const newUser = {
@@ -187,21 +173,15 @@ const joinRoomHandler = (data, socket) => {
     onlyAudio,
   };
   console.log(`joinRoomHandler: newUser: ${newUser}`);
-
   // join room as user which just is trying to join room passing room id
   const room = rooms.find((room) => room.id === roomId);
-  console.log(`joinRoomHandler: room: ${room}`);
   room.connectedUsers = [...room.connectedUsers, newUser];
-  console.log(`joinRoomHandler: room.connectedUsers: ${room.connectedUsers}`);
-
-
+  console.log(`joinRoomHandler: room: ${room}`);
   // join socket.io room
   socket.join(roomId);
-  console.log(`joinRoomHandler: socket.join(${roomId})`);
 
   // add new user to connected users array
   connectedUsers = [...connectedUsers, newUser];
-  console.log(`joinRoomHandler: connectedUsers: ${connectedUsers}`);
 
   // emit to all users which are already in this room to prepare peer connection
   room.connectedUsers.forEach((user) => {
@@ -211,44 +191,37 @@ const joinRoomHandler = (data, socket) => {
       };
 
       io.to(user.socketId).emit("conn-prepare", data);
-      console.log(`joinRoomHandler: io.to(${user.socketId}).emit("conn-prepare", ${data})`);
+      console.log(`io.to(${user.socketId}).emit("conn-prepare", data)`);
     }
   });
 
   io.to(roomId).emit("room-update", { connectedUsers: room.connectedUsers });
-  console.log(`joinRoomHandler: io.to(${roomId}).emit("room-update", { connectedUsers: ${room.connectedUsers} })`);
 };
 
 const disconnectHandler = (socket) => {
   // find if user has been registered - if yes remove him from room and connected users array
   const user = connectedUsers.find((user) => user.socketId === socket.id);
-  console.log(`disconnectHandler: user: ${user}`);
 
   if (user) {
     // remove user from room in server
     const room = rooms.find((room) => room.id === user.roomId);
-    console.log(`disconnectHandler: room: ${room}`);
 
     room.connectedUsers = room.connectedUsers.filter(
       (user) => user.socketId !== socket.id
     );
-    console.log(`disconnectHandler: room.connectedUsers: ${room.connectedUsers}`);
 
     // leave socket io room
     socket.leave(user.roomId);
-    console.log(`disconnectHandler: socket.leave(${user.roomId})`);
 
     // close the room if amount of the users which will stay in room will be 0
     if (room.connectedUsers.length > 0) {
       // emit to all users which are still in the room that user disconnected
       io.to(room.id).emit("user-disconnected", { socketId: socket.id });
-      console.log(`disconnectHandler: io.to(${room.id}).emit("user-disconnected", { socketId: ${socket.id} })`);
 
       // emit an event to rest of the users which left in the toom new connectedUsers in room
       io.to(room.id).emit("room-update", {
         connectedUsers: room.connectedUsers,
       });
-      console.log(`disconnectHandler: io.to(${room.id}).emit("room-update", {connectedUsers: ${room.connectedUsers}})`);
     } else {
       rooms = rooms.filter((r) => r.id !== room.id);
       console.log(`disconnectHandler: rooms: ${rooms}`);
@@ -260,10 +233,8 @@ const signalingHandler = (data, socket) => {
   const { connUserSocketId, signal } = data;
 
   const signalingData = { signal, connUserSocketId: socket.id };
-  console.log(`signalingHandler: signalingData: ${signalingData}`);
 
   io.to(connUserSocketId).emit("conn-signal", signalingData);
-  console.log(`signalingHandler: io.to(${connUserSocketId}).emit("conn-signal", ${signalingData})`);
 };
 
 // information from clients which are already in room that They have preapred for incoming connection
@@ -271,42 +242,11 @@ const initializeConnectionHandler = (data, socket) => {
   const { connUserSocketId } = data;
 
   const initData = { connUserSocketId: socket.id };
-  console.log(`initializeConnectionHandler: initData: ${initData}`);
 
   io.to(connUserSocketId).emit("conn-init", initData);
-  console.log(`initializeConnectionHandler: io.to(${connUserSocketId}).emit("conn-init", ${initData})`);
+  console.log(`io.to(${connUserSocketId}).emit("conn-init", ${initData})`);
 };
 
-const directMessageHandler = (data, socket) => {
-  if (
-    connectedUsers.find(
-      (connUser) => connUser.socketId === data.receiverSocketId
-    )
-  ) {
-    const receiverData = {
-      authorSocketId: socket.id,
-      messageContent: data.messageContent,
-      isAuthor: false,
-      identity: data.identity,
-    };
-    console.log(`directMessageHandler: receiverData: ${receiverData}`);
-    
-    socket.to(data.receiverSocketId).emit("direct-message", receiverData);
-    console.log(`directMessageHandler: socket.to(${data.receiverSocketId}).emit("direct-message", ${receiverData})`)
-
-    const authorData = {
-      receiverSocketId: data.receiverSocketId,
-      messageContent: data.messageContent,
-      isAuthor: true,
-      identity: data.identity,
-    };
-    console.log(`directMessageHandler: authorData: ${authorData}`);
-
-    socket.emit("direct-message", authorData);
-    console.log(`directMessageHandler: socket.emit("direct-message", ${authorData})`);
-  }
-};
-
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`${port}번에서 실행이 되었습니다.`);
 });
