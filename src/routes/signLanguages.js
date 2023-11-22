@@ -42,7 +42,6 @@ router.get("/word", async (req, res, next) => {
     const skip = (page - 1) * limit;
     const signLanguages = await SignLanguage.find({
       type: "word",
-      name: { $ne: "#NAME?" },
     })
       .sort([["name", "asc"]])
       .skip(skip)
