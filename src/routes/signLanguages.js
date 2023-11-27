@@ -57,7 +57,7 @@ router.get("/search", async (req, res, next) => {
     const search = req.query.search ? String(req.query.search) : "";
     const signLanguages = await SignLanguage.find({
       name: { $regex: search, $options: "i" },
-    });
+    }).sort([["name", "asc"]]);
 
     return res.status(200).json({ signLanguages });
   } catch (error) {
